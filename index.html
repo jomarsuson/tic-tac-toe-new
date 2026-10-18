@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic-Tac-Toe | Play & Customize</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="game.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <span aria-hidden="true"></span>
+    <div class="brand">
+      <h1>Tic-Tac-Toe</h1>
+      <p>THINK · PLAY · WIN</p>
+    </div>
+    <button class="icon-btn menu-btn" id="menuBtn" type="button"
+      aria-label="Open settings" aria-expanded="false">☰ <span>Menu</span></button>
+  </header>
+
+  <main>
+    <div class="layout-canvas" id="layoutCanvas">
+      <section class="mode-section design-item">
+        <div class="section-heading">
+          <h2>Choose your game</h2>
+          <p>Play against the computer or challenge a friend.</p>
+        </div>
+        <div class="mode-buttons">
+          <button class="mode-btn active" id="aiModeBtn" type="button">
+            <span class="mode-icon">🤖</span>
+            <span>Play vs AI</span>
+            <small>Challenge the computer</small>
+          </button>
+          <button class="mode-btn" id="twoPlayerBtn" type="button">
+            <span class="mode-icon">👥</span>
+            <span>Two Players</span>
+            <small>Play with a friend</small>
+          </button>
+        </div>
+      </section>
+
+      <section class="status-section design-item" aria-live="polite">
+        <p id="status">Your turn — X</p>
+      </section>
+
+      <section class="board-section design-item" aria-label="Game board">
+        <div class="board" role="group" aria-label="Tic-Tac-Toe board">
+          <button class="cell" type="button" data-index="0" aria-label="Cell 1"></button>
+          <button class="cell" type="button" data-index="1" aria-label="Cell 2"></button>
+          <button class="cell" type="button" data-index="2" aria-label="Cell 3"></button>
+          <button class="cell" type="button" data-index="3" aria-label="Cell 4"></button>
+          <button class="cell" type="button" data-index="4" aria-label="Cell 5"></button>
+          <button class="cell" type="button" data-index="5" aria-label="Cell 6"></button>
+          <button class="cell" type="button" data-index="6" aria-label="Cell 7"></button>
+          <button class="cell" type="button" data-index="7" aria-label="Cell 8"></button>
+          <button class="cell" type="button" data-index="8" aria-label="Cell 9"></button>
+        </div>
+      </section>
+
+      <section class="controls-section design-item">
+        <div class="game-buttons">
+          <button class="primary-btn" id="startBtn" type="button">Start game</button>
+          <button class="secondary-btn" id="restartBtn" type="button">Restart round</button>
+        </div>
+      </section>
+
+      <section class="score-section design-item" aria-label="Scoreboard">
+        <div class="score-card">
+          <span>Player X</span>
+          <strong id="playerWins">0</strong>
+        </div>
+        <div class="score-card">
+          <span>Player O / AI</span>
+          <strong id="aiWins">0</strong>
+        </div>
+        <div class="score-card">
+          <span>Draws</span>
+          <strong id="draws">0</strong>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="drawer-backdrop" id="drawerBackdrop" aria-hidden="true"></div>
+
+  <aside class="settings-drawer" id="settingsDrawer" aria-hidden="true">
+    <div class="drawer-header">
+      <div>
+        <h2>Settings</h2>
+        <p>Customize your game.</p>
+      </div>
+      <button class="icon-btn" id="closeMenuBtn" type="button" aria-label="Close settings">✕</button>
+    </div>
+
+    <section class="settings-group">
+      <h3>GAME</h3>
+      <button class="setting-row" id="historyMenuBtn" type="button">
+        <span class="setting-icon">🕘</span>
+        <span class="setting-copy">
+          <strong>Game history</strong>
+          <small>View saved results</small>
+        </span>
+      </button>
+      <button class="setting-row" id="feedbackMenuBtn" type="button">
+        <span class="setting-icon">💬</span>
+        <span class="setting-copy">
+          <strong>Comments &amp; Suggestions</strong>
+          <small>Share your feedback</small>
+        </span>
+      </button>
+      <button class="setting-row" id="soundBtn" type="button">
+        <span class="setting-icon" id="soundIcon">🔊</span>
+        <span class="setting-copy">
+          <strong>Sound effects</strong>
+          <small id="soundStatus">Sound is on</small>
+        </span>
+        <span class="switch on" id="soundSwitch"></span>
+      </button>
+    </section>
+
+    <section class="settings-group">
+      <h3>APPEARANCE</h3>
+      <p class="settings-description">Choose a theme or customize your colors.</p>
+
+      <div class="theme-grid">
+        <button class="theme-option" type="button" data-theme="chocolate" aria-pressed="false">
+          <span class="theme-swatches"><i style="background:#F5EBDD"></i><i style="background:#FFF9F0"></i><i style="background:#80543D"></i></span>
+          <span>Chocolate</span><b class="theme-check">✓</b>
+        </button>
+        <button class="theme-option" type="button" data-theme="dark" aria-pressed="false">
+          <span class="theme-swatches"><i style="background:#171717"></i><i style="background:#262626"></i><i style="background:#C59A6B"></i></span>
+          <span>Dark</span><b class="theme-check">✓</b>
+        </button>
+        <button class="theme-option" type="button" data-theme="ocean" aria-pressed="false">
+          <span class="theme-swatches"><i style="background:#EAF3FA"></i><i style="background:#FFFFFF"></i><i style="background:#246B9E"></i></span>
+          <span>Ocean</span><b class="theme-check">✓</b>
+        </button>
+        <button class="theme-option" type="button" data-theme="forest" aria-pressed="false">
+          <span class="theme-swatches"><i style="background:#EAF1E8"></i><i style="background:#FFFFFF"></i><i style="background:#386641"></i></span>
+          <span>Forest</span><b class="theme-check">✓</b>
+        </button>
+        <button class="theme-option" type="button" data-theme="purple" aria-pressed="false">
+          <span class="theme-swatches"><i style="background:#211A35"></i><i style="background:#302644"></i><i style="background:#A78BFA"></i></span>
+          <span>Purple</span><b class="theme-check">✓</b>
+        </button>
+      </div>
+
+      <label class="custom-color" for="backgroundColor">
+        Background color
+        <input id="backgroundColor" type="color" value="#F5EBDD">
+      </label>
+      <label class="custom-color" for="accentColor">
+        Accent color
+        <input id="accentColor" type="color" value="#80543D">
+      </label>
+      <label class="custom-color" for="cardColor">
+        Card color
+        <input id="cardColor" type="color" value="#FFF9F0">
+      </label>
+      <button class="secondary-btn full-btn" id="resetThemeBtn" type="button">Reset theme</button>
+    </section>
+  </aside>
+
+  <aside class="settings-drawer" id="historyDrawer" aria-hidden="true">
+    <div class="drawer-header">
+      <div>
+        <h2>Game history</h2>
+        <p>Your saved game results.</p>
+      </div>
+      <button class="icon-btn" id="closeHistoryBtn" type="button" aria-label="Close history">✕</button>
+    </div>
+    <p class="history-status" id="historyStatus">Open history to load saved games.</p>
+    <ul class="history-list" id="historyList"></ul>
+    <button class="primary-btn full-btn" id="refreshHistoryBtn" type="button">Refresh history</button>
+  </aside>
+
+  <aside class="settings-drawer" id="feedbackDrawer" aria-hidden="true" aria-labelledby="feedbackTitle">
+    <div class="drawer-header">
+      <div>
+        <h2 id="feedbackTitle">Comments &amp; Suggestions</h2>
+        <p>Tell us what you think or how we can improve.</p>
+      </div>
+      <button class="icon-btn" id="closeFeedbackBtn" type="button" aria-label="Close comments and suggestions">✕</button>
+    </div>
+
+    <form class="feedback-form" id="feedbackForm" novalidate>
+      <label class="field-label" for="feedbackMessage">Your comments or suggestions</label>
+      <textarea class="field" id="feedbackMessage" name="message" rows="7" maxlength="500"
+        placeholder="Write your comments or suggestions here..." required></textarea>
+      <p class="field-hint"><span id="feedbackCount">0 / 500</span></p>
+
+      <!-- Spam trap: real people never see or fill this in -->
+      <div class="hp" aria-hidden="true">
+        <label for="feedbackWebsite">Website</label>
+        <input id="feedbackWebsite" name="website" type="text" tabindex="-1" autocomplete="off">
+      </div>
+
+      <p class="feedback-status" id="feedbackStatus" role="status" aria-live="polite"></p>
+      <button class="primary-btn full-btn" id="sendFeedbackBtn" type="submit">Submit</button>
+    </form>
+  </aside>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
