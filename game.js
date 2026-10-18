@@ -1,7 +1,6 @@
-
 /* =========================================================
    TIC-TAC-TOE — UPDATED JAVASCRIPT
-   Game history + numeric IDs + suggestions
+   GameBoard Class + Game history + numeric IDs + suggestions
    Philippine date/time + legacy_id support
    ========================================================= */
 
@@ -39,7 +38,11 @@ const historyDrawer = $("#historyDrawer");
 const feedbackDrawer = $("#feedbackDrawer");
 const backdrop = $("#drawerBackdrop");
 
-let board = Array(9).fill("");
+/* =========================================================
+   GAME VARIABLES
+   ========================================================= */
+
+let board;
 let gameActive = false;
 let aiThinking = false;
 let resultSaved = false;
@@ -52,11 +55,57 @@ let toastTimer;
 let aiTimer = null;
 let overlayTimer = null;
 
+/* =========================================================
+   GAME BOARD CLASS — OBJECT-ORIENTED PROGRAMMING
+   ========================================================= */
+
+class GameBoard {
+  constructor(size = 9) {
+    this.size = size;
+    this.board = Array(size).fill("");
+  }
+
+  reset() {
+    this.board.fill("");
+  }
+
+  placeMark(index, mark) {
+    if (
+      !Number.isInteger(index) ||
+      index < 0 ||
+      index >= this.size ||
+      this.board[index] !== "" ||
+      (mark !== "X" && mark !== "O")
+    ) {
+      return false;
+    }
+
+    this.board[index] = mark;
+    return true;
+  }
+
+  getBoard() {
+    return this.board;
+  }
+}
+
+/* Create the game board instance */
+const gameBoard = new GameBoard();
+board = gameBoard.getBoard();
+
+/* =========================================================
+   WINNING COMBINATIONS
+   ========================================================= */
+
 const wins = [
   [0, 1, 2], [3, 4, 5], [6, 7, 8],
   [0, 3, 6], [1, 4, 7], [2, 5, 8],
   [0, 4, 8], [2, 4, 6]
 ];
+
+/* =========================================================
+   THEMES
+   ========================================================= */
 
 const themes = {
   chocolate: {
@@ -86,8 +135,13 @@ const themes = {
   }
 };
 
+/* =========================================================
+   GENERAL HELPERS
+   ========================================================= */
+
 function showToast(message) {
   const toast = $("#toast");
+
   if (!toast) {
     console.log(message);
     return;
@@ -96,7 +150,10 @@ function showToast(message) {
   toast.textContent = message;
   toast.classList.add("show");
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove("show"), 3000);
+
+  toastTimer = setTimeout(() => {
+    toast.classList.remove("show");
+  }, 3000);
 }
 
 function setStatus(message) {
@@ -120,6 +177,7 @@ function playSound(frequency = 440, duration = 0.09) {
 
     oscillator.frequency.value = frequency;
     oscillator.type = "sine";
+
     gain.gain.setValueAtTime(0.08, audioContext.currentTime);
     gain.gain.exponentialRampToValueAtTime(
       0.001,
@@ -128,16 +186,29 @@ function playSound(frequency = 440, duration = 0.09) {
 
     oscillator.connect(gain);
     gain.connect(audioContext.destination);
+
     oscillator.start();
     oscillator.stop(audioContext.currentTime + duration);
   } catch {}
 }
 
 function renderScores() {
-  if ($("#playerWins")) $("#playerWins").textContent = scores.player;
-  if ($("#aiWins")) $("#aiWins").textContent = scores.ai;
-  if ($("#draws")) $("#draws").textContent = scores.draws;
+  if ($("#playerWins")) {
+    $("#playerWins").textContent = scores.player;
+  }
+
+  if ($("#aiWins")) {
+    $("#aiWins").textContent = scores.ai;
+  }
+
+  if ($("#draws")) {
+    $("#draws").textContent = scores.draws;
+  }
 }
+
+/* =========================================================
+   GAME MODE AND RESTART
+   ========================================================= */
 
 function setMode(newMode) {
   if (newMode !== mode) {
@@ -158,23 +229,42 @@ function startGame() {
   clearTimeout(overlayTimer);
 
   $("#victoryOverlay")?.remove();
-  cells.forEach(cell => cell.classList.remove("winning-cell"));
 
-  board = Array(9).fill("");
+  cells.forEach(cell => {
+    cell.classList.remove("winning-cell");
+  });
+
+  // Reset the board through the GameBoard class.
+  gameBoard.reset();
+  board = gameBoard.getBoard();
+
   gameActive = true;
   aiThinking = false;
   resultSaved = false;
-  roundId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+  roundId =
+    `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
   cells.forEach((cell, index) => {
     cell.textContent = "";
     cell.disabled = false;
+
     delete cell.dataset.mark;
-    cell.setAttribute("aria-label", `Cell ${index + 1}, empty`);
+
+    cell.setAttribute(
+      "aria-label",
+      `Cell ${index + 1}, empty`
+    );
   });
 
-  setStatus(mode === "ai" ? "Your turn — X" : "Player X's turn");
+  setStatus(
+    mode === "ai" ? "Your turn — X" : "Player X's turn"
+  );
 }
+
+/* =========================================================
+   WINNER DETECTION
+   ========================================================= */
 
 function checkWinner(position) {
   for (const [a, b, c] of wins) {
@@ -198,6 +288,10 @@ function getWinningLine(position) {
   ) || [];
 }
 
+/* =========================================================
+   VICTORY EFFECT
+   ========================================================= */
+
 function showVictoryEffect(result) {
   $("#victoryOverlay")?.remove();
 
@@ -208,6 +302,7 @@ function showVictoryEffect(result) {
       : (mode === "ai" ? "AI WINS!" : "PLAYER O WINS!");
 
   const overlay = document.createElement("div");
+
   overlay.id = "victoryOverlay";
   overlay.className =
     `victory-overlay ${result === "draw" ? "is-draw" : "is-win"}`;
@@ -223,6 +318,7 @@ function showVictoryEffect(result) {
   heading.textContent = title;
 
   const message = document.createElement("p");
+
   message.textContent = result === "draw"
     ? "A close match. Try again!"
     : mode === "two"
@@ -232,6 +328,7 @@ function showVictoryEffect(result) {
         : "Better luck next round!";
 
   const button = document.createElement("button");
+
   button.type = "button";
   button.className = "victory-play-again";
   button.textContent = "PLAY AGAIN";
@@ -249,13 +346,16 @@ function showVictoryEffect(result) {
   if (result !== "draw") {
     for (let i = 0; i < 48; i++) {
       const bit = document.createElement("span");
+
       bit.className = "confetti-piece";
       bit.style.left = `${Math.random() * 100}%`;
       bit.style.animationDelay = `${Math.random() * 0.7}s`;
+
       bit.style.setProperty(
         "--confetti-rotate",
         `${Math.random() * 720 - 360}deg`
       );
+
       overlay.append(bit);
     }
   }
@@ -263,14 +363,32 @@ function showVictoryEffect(result) {
   button.focus();
 }
 
+/* =========================================================
+   PLACE MARK ON THE BOARD
+   ========================================================= */
+
 function updateCell(index, mark) {
-  board[index] = mark;
+  // The class validates and places the mark.
+  if (!gameBoard.placeMark(index, mark)) {
+    return;
+  }
+
   cells[index].textContent = mark;
   cells[index].dataset.mark = mark;
-  cells[index].setAttribute("aria-label", `Cell ${index + 1}, ${mark}`);
+
+  cells[index].setAttribute(
+    "aria-label",
+    `Cell ${index + 1}, ${mark}`
+  );
+
   cells[index].disabled = true;
+
   playSound(mark === "X" ? 520 : 360);
 }
+
+/* =========================================================
+   PLAYER INPUT AND GAME LOGIC
+   ========================================================= */
 
 function handleCellClick(event) {
   const index = Number(event.currentTarget.dataset.index);
@@ -282,7 +400,9 @@ function handleCellClick(event) {
     index < 0 ||
     index > 8 ||
     board[index]
-  ) return;
+  ) {
+    return;
+  }
 
   if (mode === "ai") {
     updateCell(index, "X");
@@ -290,14 +410,21 @@ function handleCellClick(event) {
     if (finishIfOver()) return;
 
     aiThinking = true;
-    cells.forEach(cell => cell.disabled = true);
+
+    cells.forEach(cell => {
+      cell.disabled = true;
+    });
+
     setStatus("AI is thinking...");
 
     aiTimer = setTimeout(() => {
       if (!gameActive) return;
 
       const move = getBestMove(board);
-      if (move !== -1) updateCell(move, "O");
+
+      if (move !== -1) {
+        updateCell(move, "O");
+      }
 
       aiThinking = false;
 
@@ -305,17 +432,27 @@ function handleCellClick(event) {
         cell.disabled = !gameActive || Boolean(board[i]);
       });
 
-      if (!finishIfOver()) setStatus("Your turn — X");
+      if (!finishIfOver()) {
+        setStatus("Your turn — X");
+      }
     }, 450);
   } else {
-    const mark = board.filter(Boolean).length % 2 === 0 ? "X" : "O";
+    const mark =
+      board.filter(Boolean).length % 2 === 0 ? "X" : "O";
+
     updateCell(index, mark);
 
     if (!finishIfOver()) {
-      setStatus(mark === "X" ? "Player O's turn" : "Player X's turn");
+      setStatus(
+        mark === "X" ? "Player O's turn" : "Player X's turn"
+      );
     }
   }
 }
+
+/* =========================================================
+   AI — MINIMAX ALGORITHM
+   ========================================================= */
 
 function minimax(position, maximizing, depth = 0) {
   const result = checkWinner(position);
@@ -331,7 +468,12 @@ function minimax(position, maximizing, depth = 0) {
       if (position[i]) continue;
 
       position[i] = "O";
-      best = Math.max(best, minimax(position, false, depth + 1));
+
+      best = Math.max(
+        best,
+        minimax(position, false, depth + 1)
+      );
+
       position[i] = "";
     }
 
@@ -344,7 +486,12 @@ function minimax(position, maximizing, depth = 0) {
     if (position[i]) continue;
 
     position[i] = "X";
-    best = Math.min(best, minimax(position, true, depth + 1));
+
+    best = Math.min(
+      best,
+      minimax(position, true, depth + 1)
+    );
+
     position[i] = "";
   }
 
@@ -359,7 +506,9 @@ function getBestMove(position) {
     if (position[i]) continue;
 
     position[i] = "O";
+
     const score = minimax(position, false);
+
     position[i] = "";
 
     if (score > bestScore) {
@@ -371,40 +520,60 @@ function getBestMove(position) {
   return bestMove;
 }
 
+/* =========================================================
+   FINISH GAME AND SAVE RESULT
+   ========================================================= */
+
 function finishIfOver() {
   const result = checkWinner(board);
+
   if (!result) return false;
 
   gameActive = false;
   aiThinking = false;
-  cells.forEach(cell => cell.disabled = true);
+
+  cells.forEach(cell => {
+    cell.disabled = true;
+  });
 
   if (result === "draw") {
     scores.draws++;
+
     setStatus("It's a draw!");
     playSound(280, 0.2);
   } else if (result === "X") {
     scores.player++;
-    setStatus(mode === "ai" ? "You win!" : "Player X wins!");
+
+    setStatus(
+      mode === "ai" ? "You win!" : "Player X wins!"
+    );
+
     playSound(660, 0.2);
 
-    getWinningLine(board).forEach(index =>
-      cells[index]?.classList.add("winning-cell")
-    );
+    getWinningLine(board).forEach(index => {
+      cells[index]?.classList.add("winning-cell");
+    });
   } else {
     scores.ai++;
-    setStatus(mode === "ai" ? "AI wins!" : "Player O wins!");
+
+    setStatus(
+      mode === "ai" ? "AI wins!" : "Player O wins!"
+    );
+
     playSound(200, 0.2);
 
-    getWinningLine(board).forEach(index =>
-      cells[index]?.classList.add("winning-cell")
-    );
+    getWinningLine(board).forEach(index => {
+      cells[index]?.classList.add("winning-cell");
+    });
   }
 
   renderScores();
   saveGameResult(result);
 
-  overlayTimer = setTimeout(() => showVictoryEffect(result), 300);
+  overlayTimer = setTimeout(() => {
+    showVictoryEffect(result);
+  }, 300);
+
   return true;
 }
 
@@ -414,7 +583,10 @@ function finishIfOver() {
 
 async function fetchWithTimeout(url, options = {}, ms = 30000) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), ms);
+
+  const timer = setTimeout(() => {
+    controller.abort();
+  }, ms);
 
   try {
     return await fetch(url, {
@@ -436,7 +608,9 @@ function supabaseReady() {
 
 async function supabaseInsert(table, row) {
   if (!supabaseReady()) {
-    throw new Error("Supabase URL or publishable key is missing.");
+    throw new Error(
+      "Supabase URL or publishable key is missing."
+    );
   }
 
   return fetchWithTimeout(
@@ -456,7 +630,9 @@ async function supabaseInsert(table, row) {
 
 async function supabaseSelect(table, query) {
   if (!supabaseReady()) {
-    throw new Error("Supabase URL or publishable key is missing.");
+    throw new Error(
+      "Supabase URL or publishable key is missing."
+    );
   }
 
   const response = await fetchWithTimeout(
@@ -484,7 +660,10 @@ function formatPhilippineDate(value) {
   if (!value) return "Date unavailable";
 
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Date unavailable";
+
+  if (Number.isNaN(date.getTime())) {
+    return "Date unavailable";
+  }
 
   return new Intl.DateTimeFormat("en-PH", {
     timeZone: "Asia/Manila",
@@ -511,6 +690,7 @@ let syncToastShown = false;
 function loadStoredHistory() {
   try {
     const log = JSON.parse(store.get(HISTORY_KEY) || "[]");
+
     return Array.isArray(log) ? log : [];
   } catch {
     return [];
@@ -521,6 +701,7 @@ let historyLog = loadStoredHistory();
 
 function persistHistory() {
   historyLog = historyLog.slice(-HISTORY_LIMIT);
+
   store.set(HISTORY_KEY, JSON.stringify(historyLog));
 }
 
@@ -528,7 +709,9 @@ function resultLabel(result) {
   if (result === "draw") return "Draw";
 
   if (mode === "two") {
-    return result === "X" ? "Player X Win" : "Player O Win";
+    return result === "X"
+      ? "Player X Win"
+      : "Player O Win";
   }
 
   return result === "X" ? "Player X Win" : "AI Win";
@@ -554,6 +737,7 @@ function normalizeResult(value) {
 
 function saveGameResult(result) {
   if (resultSaved) return;
+
   resultSaved = true;
 
   historyLog.push({
@@ -573,12 +757,12 @@ function saveGameResult(result) {
 }
 
 /*
-  FIX:
   - Send legacy_id because the database requires it.
   - Do not send id; PostgreSQL should generate the numeric ID.
   - Do not send device_id.
   - Preserve pending entries if upload fails.
 */
+
 function syncHistory({ quiet = false } = {}) {
   if (syncPromise) return syncPromise;
 
@@ -595,6 +779,7 @@ function syncHistory({ quiet = false } = {}) {
           "Skipped unsupported game result:",
           entry.result
         );
+
         failed = true;
         continue;
       }
@@ -640,6 +825,7 @@ function syncHistory({ quiet = false } = {}) {
         persistHistory();
       } catch (error) {
         console.error("Game history upload failed:", error);
+
         failed = true;
         break;
       }
@@ -649,12 +835,15 @@ function syncHistory({ quiet = false } = {}) {
 
     if (failed && !quiet && !syncToastShown) {
       syncToastShown = true;
+
       showToast(
         "Some results could not upload. Check the database error in Console."
       );
     }
 
-    if (!failed) syncToastShown = false;
+    if (!failed) {
+      syncToastShown = false;
+    }
 
     return failed;
   })().finally(() => {
@@ -698,6 +887,7 @@ function renderHistory() {
   if (!records.length) {
     historyStatus.textContent =
       "No saved games yet. Play a game to see results here.";
+
     return;
   }
 
@@ -714,7 +904,9 @@ function renderHistory() {
     const details = document.createElement("small");
 
     title.textContent =
-      normalizeResult(record.result) || record.result || "Game result";
+      normalizeResult(record.result) ||
+      record.result ||
+      "Game result";
 
     const hasNumericId =
       record.id !== null &&
@@ -741,10 +933,15 @@ async function loadGameHistory() {
   try {
     await syncHistory({ quiet: true });
     await loadServerGameHistory();
+
     lastSyncFailed = false;
   } catch (error) {
     lastSyncFailed = true;
-    console.error("Could not load server game history:", error);
+
+    console.error(
+      "Could not load server game history:",
+      error
+    );
   }
 
   renderHistory();
@@ -765,13 +962,19 @@ let lastFocus = null;
 function openDrawer(drawer) {
   if (!drawer) return;
 
-  const alreadyOpen = drawers.some(d => d.classList.contains("open"));
-  if (!alreadyOpen) lastFocus = document.activeElement;
+  const alreadyOpen = drawers.some(d =>
+    d.classList.contains("open")
+  );
+
+  if (!alreadyOpen) {
+    lastFocus = document.activeElement;
+  }
 
   closeDrawers({ restoreFocus: false });
 
   drawer.classList.add("open");
   drawer.setAttribute("aria-hidden", "false");
+
   backdrop?.classList.add("open");
 
   if (drawer === settingsDrawer) {
@@ -782,7 +985,9 @@ function openDrawer(drawer) {
 }
 
 function closeDrawers({ restoreFocus = true } = {}) {
-  const wasOpen = drawers.some(d => d.classList.contains("open"));
+  const wasOpen = drawers.some(d =>
+    d.classList.contains("open")
+  );
 
   drawers.forEach(drawer => {
     drawer.classList.remove("open");
@@ -790,6 +995,7 @@ function closeDrawers({ restoreFocus = true } = {}) {
   });
 
   backdrop?.classList.remove("open");
+
   $("#menuBtn")?.setAttribute("aria-expanded", "false");
 
   if (restoreFocus && wasOpen && lastFocus?.focus) {
@@ -805,7 +1011,9 @@ on("#closeFeedbackBtn", "click", closeDrawers);
 backdrop?.addEventListener("click", closeDrawers);
 
 document.addEventListener("keydown", event => {
-  if (event.key === "Escape") closeDrawers();
+  if (event.key === "Escape") {
+    closeDrawers();
+  }
 });
 
 on("#historyMenuBtn", "click", () => {
@@ -857,10 +1065,14 @@ function updateSoundUI() {
 
 on("#soundBtn", "click", () => {
   soundOn = !soundOn;
+
   store.set("tttSound", String(soundOn));
+
   updateSoundUI();
 
-  if (soundOn) playSound(520, 0.1);
+  if (soundOn) {
+    playSound(520, 0.1);
+  }
 });
 
 /* =========================================================
@@ -893,6 +1105,7 @@ function applyTheme(colors) {
 
 function setTheme(name, { silent = false } = {}) {
   const colors = themes[name];
+
   if (!colors) return;
 
   applyTheme(colors);
@@ -902,8 +1115,13 @@ function setTheme(name, { silent = false } = {}) {
 
   $$(".theme-option").forEach(button => {
     const selected = button.dataset.theme === name;
+
     button.classList.toggle("selected", selected);
-    button.setAttribute("aria-pressed", String(selected));
+
+    button.setAttribute(
+      "aria-pressed",
+      String(selected)
+    );
   });
 
   if ($("#backgroundColor")) {
@@ -929,14 +1147,22 @@ function applyCustomColors() {
   let previous;
 
   try {
-    previous = JSON.parse(store.get("tttCustomColors") || "null");
+    previous = JSON.parse(
+      store.get("tttCustomColors") || "null"
+    );
   } catch {
     previous = null;
   }
 
-  const page = $("#backgroundColor")?.value || themes.chocolate.page;
-  const accent = $("#accentColor")?.value || themes.chocolate.accent;
-  const card = $("#cardColor")?.value || themes.chocolate.card;
+  const page =
+    $("#backgroundColor")?.value || themes.chocolate.page;
+
+  const accent =
+    $("#accentColor")?.value || themes.chocolate.accent;
+
+  const card =
+    $("#cardColor")?.value || themes.chocolate.card;
+
   const dark = luma(page) < 128;
 
   const colors = {
@@ -956,19 +1182,24 @@ function applyCustomColors() {
 
   $$(".theme-option").forEach(button => {
     button.classList.remove("selected");
+
     button.setAttribute("aria-pressed", "false");
   });
 }
 
 $$(".theme-option").forEach(button => {
-  button.addEventListener("click", () => setTheme(button.dataset.theme));
+  button.addEventListener("click", () => {
+    setTheme(button.dataset.theme);
+  });
 });
 
 ["backgroundColor", "accentColor", "cardColor"].forEach(id => {
   on(`#${id}`, "input", applyCustomColors);
 });
 
-on("#resetThemeBtn", "click", () => setTheme("chocolate"));
+on("#resetThemeBtn", "click", () => {
+  setTheme("chocolate");
+});
 
 /* =========================================================
    COMMENTS AND SUGGESTIONS
@@ -976,24 +1207,31 @@ on("#resetThemeBtn", "click", () => setTheme("chocolate"));
 
 const FEEDBACK_COOLDOWN_MS = 30000;
 const FEEDBACK_QUEUE_KEY = "tttFeedbackQueue";
+
 const feedbackForm = $("#feedbackForm");
 const feedbackMessage = $("#feedbackMessage");
 const feedbackStatus = $("#feedbackStatus");
 const sendFeedbackBtn = $("#sendFeedbackBtn");
 
-let lastFeedbackAt = Number(store.get("tttFeedbackLast")) || 0;
+let lastFeedbackAt =
+  Number(store.get("tttFeedbackLast")) || 0;
+
 let flushingFeedback = false;
 
 function setFeedbackStatus(message, kind = "") {
   if (!feedbackStatus) return;
 
   feedbackStatus.textContent = message;
-  feedbackStatus.className = `feedback-status ${kind}`.trim();
+  feedbackStatus.className =
+    `feedback-status ${kind}`.trim();
 }
 
 function readFeedbackQueue() {
   try {
-    const queue = JSON.parse(store.get(FEEDBACK_QUEUE_KEY) || "[]");
+    const queue = JSON.parse(
+      store.get(FEEDBACK_QUEUE_KEY) || "[]"
+    );
+
     return Array.isArray(queue) ? queue : [];
   } catch {
     return [];
@@ -1002,7 +1240,10 @@ function readFeedbackQueue() {
 
 function writeFeedbackQueue(queue) {
   if (queue.length) {
-    store.set(FEEDBACK_QUEUE_KEY, JSON.stringify(queue.slice(-20)));
+    store.set(
+      FEEDBACK_QUEUE_KEY,
+      JSON.stringify(queue.slice(-20))
+    );
   } else {
     store.remove(FEEDBACK_QUEUE_KEY);
   }
@@ -1015,11 +1256,15 @@ async function postFeedback(entry) {
 
   if (!response.ok) {
     const detail = await response.text();
+
     const error = new Error(
       `Feedback request failed (${response.status}): ${detail}`
     );
 
-    error.setup = [400, 401, 403, 404, 422].includes(response.status);
+    error.setup = [400, 401, 403, 404, 422].includes(
+      response.status
+    );
+
     throw error;
   }
 }
@@ -1028,9 +1273,11 @@ async function flushFeedbackQueue() {
   if (flushingFeedback) return;
 
   const queue = readFeedbackQueue();
+
   if (!queue.length) return;
 
   flushingFeedback = true;
+
   const remaining = [];
 
   try {
@@ -1038,7 +1285,11 @@ async function flushFeedbackQueue() {
       try {
         await postFeedback(entry);
       } catch (error) {
-        console.error("Queued feedback upload failed:", error);
+        console.error(
+          "Queued feedback upload failed:",
+          error
+        );
+
         remaining.push(entry);
       }
     }
@@ -1051,6 +1302,7 @@ async function flushFeedbackQueue() {
 
 function ensureSuggestionsList() {
   const drawer = $("#feedbackDrawer");
+
   if (!drawer) return null;
 
   let container = $("#suggestionsList");
@@ -1063,6 +1315,7 @@ function ensureSuggestionsList() {
     heading.textContent = "Comments & Suggestions";
 
     const refresh = document.createElement("button");
+
     refresh.type = "button";
     refresh.id = "refreshSuggestionsBtn";
     refresh.textContent = "Refresh Comments";
@@ -1081,12 +1334,14 @@ function ensureSuggestionsList() {
 
 async function loadSuggestions() {
   const entries = ensureSuggestionsList();
+
   if (!entries) return;
 
   entries.replaceChildren();
 
   const loading = document.createElement("li");
   loading.textContent = "Loading comments...";
+
   entries.append(loading);
 
   try {
@@ -1099,8 +1354,12 @@ async function loadSuggestions() {
 
     if (!rows.length) {
       const empty = document.createElement("li");
-      empty.textContent = "No comments or suggestions yet.";
+
+      empty.textContent =
+        "No comments or suggestions yet.";
+
       entries.append(empty);
+
       return;
     }
 
@@ -1110,6 +1369,7 @@ async function loadSuggestions() {
       const details = document.createElement("small");
 
       message.textContent = row.message || "";
+
       details.textContent =
         `ID: ${row.id} · ${formatPhilippineDate(row.created_at)}`;
 
@@ -1117,11 +1377,15 @@ async function loadSuggestions() {
       entries.append(item);
     });
   } catch (error) {
-    console.error("Could not load suggestions:", error);
+    console.error(
+      "Could not load suggestions:",
+      error
+    );
 
     entries.replaceChildren();
 
     const item = document.createElement("li");
+
     item.textContent =
       "Unable to load comments. Check the Supabase connection and permissions.";
 
@@ -1157,6 +1421,7 @@ feedbackForm?.addEventListener("submit", async event => {
     );
 
     feedbackMessage?.focus();
+
     return;
   }
 
@@ -1168,12 +1433,15 @@ feedbackForm?.addEventListener("submit", async event => {
       `Please wait ${Math.ceil(waitMs / 1000)} seconds before sending another message.`,
       "error"
     );
+
     return;
   }
 
   const entry = { message };
 
-  if (sendFeedbackBtn) sendFeedbackBtn.disabled = true;
+  if (sendFeedbackBtn) {
+    sendFeedbackBtn.disabled = true;
+  }
 
   setFeedbackStatus("Submitting... Please wait.");
 
@@ -1197,7 +1465,10 @@ feedbackForm?.addEventListener("submit", async event => {
   } catch (error) {
     console.error("Feedback send failed:", error);
 
-    writeFeedbackQueue([...readFeedbackQueue(), entry]);
+    writeFeedbackQueue([
+      ...readFeedbackQueue(),
+      entry
+    ]);
 
     setFeedbackStatus(
       error.setup
@@ -1207,9 +1478,15 @@ feedbackForm?.addEventListener("submit", async event => {
     );
   } finally {
     lastFeedbackAt = Date.now();
-    store.set("tttFeedbackLast", String(lastFeedbackAt));
 
-    if (sendFeedbackBtn) sendFeedbackBtn.disabled = false;
+    store.set(
+      "tttFeedbackLast",
+      String(lastFeedbackAt)
+    );
+
+    if (sendFeedbackBtn) {
+      sendFeedbackBtn.disabled = false;
+    }
   }
 });
 
@@ -1218,7 +1495,9 @@ feedbackForm?.addEventListener("submit", async event => {
    ========================================================= */
 
 function restorePreferences() {
-  const savedTheme = store.get("tttTheme") || "chocolate";
+  const savedTheme =
+    store.get("tttTheme") || "chocolate";
+
   const savedColors = store.get("tttCustomColors");
 
   if (savedTheme === "custom" && savedColors) {
@@ -1249,6 +1528,7 @@ function restorePreferences() {
   }
 
   store.remove("tttCustomLayout");
+
   updateSoundUI();
 }
 
@@ -1260,5 +1540,8 @@ startGame();
 syncHistory({ quiet: true })
   .then(() => loadGameHistory())
   .catch(error => {
-    console.error("Initial game history sync failed:", error);
+    console.error(
+      "Initial game history sync failed:",
+      error
+    );
   });
