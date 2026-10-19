@@ -862,3 +862,66 @@ textarea.field { resize: vertical; min-height: 130px; }
     transform: none;
   }
 }
+
+
+/*ast*/
+
+/* =========================================================
+   51. MOBILE-FRIENDLY START AND RESET ANIMATIONS
+   Gumagana sa touchscreen at mouse.
+   ========================================================= */
+
+#startBtn,
+#restartBtn {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease,
+    border-color 0.18s ease;
+}
+
+/* Touch feedback sa cellphone at tablet */
+@media (hover: none) and (pointer: coarse) {
+  #startBtn:active,
+  #restartBtn:active {
+    transform: scale(0.94);
+    filter: brightness(1.12);
+    border-color: var(--accent);
+    box-shadow: 0 0 18px color-mix(
+      in srgb, var(--accent) 35%, transparent
+    );
+  }
+}
+
+/* Hover effect sa desktop */
+@media (hover: hover) and (pointer: fine) {
+  #startBtn:hover,
+  #restartBtn:hover {
+    transform: translateY(-3px);
+    filter: brightness(1.1);
+    border-color: var(--accent);
+    box-shadow: 0 10px 26px color-mix(
+      in srgb, var(--accent) 22%, transparent
+    );
+  }
+
+  #startBtn:active,
+  #restartBtn:active {
+    transform: scale(0.96);
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  #startBtn,
+  #restartBtn {
+    transition: none;
+  }
+
+  #startBtn:active,
+  #restartBtn:active {
+    transform: none;
+  }
+}
