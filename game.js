@@ -2,6 +2,9 @@
    TIC-TAC-TOE — UPDATED JAVASCRIPT
    GameBoard Class + Game history + numeric IDs + suggestions
    Philippine date/time + legacy_id support
+   + Difficulty levels (Easy/Medium 3x3, Hard 5x5)
+   + Board hidden until Start game
+   + Gameplay screen with Back button
    ========================================================= */
 
 const SUPABASE_URL = "https://faleqiuiuejqwanxtfbs.supabase.co";
@@ -31,7 +34,11 @@ const store = {
   }
 };
 
-const cells = $$(".cell");
+/* Cells are now created by buildBoardCells() to match the difficulty. */
+let cells = [];
+const boardEl = $("#board");
+const boardSection = $("#boardSection");
+const layoutCanvas = $("#layoutCanvas");
 const statusText = $("#status") || document.createElement("p");
 const settingsDrawer = $("#settingsDrawer");
 const historyDrawer = $("#historyDrawer");
@@ -47,7 +54,11 @@ let gameActive = false;
 let aiThinking = false;
 let resultSaved = false;
 let roundId = null;
+let roundMode = "ai";
 let mode = "ai";
+let selectedLevel = null;
+let boardSize = 3;
+let winLength = 3;
 let soundOn = store.get("tttSound") !== "false";
 let scores = { player: 0, ai: 0, draws: 0 };
 let audioContext = null;
@@ -67,6 +78,12 @@ class GameBoard {
 
   reset() {
     this.board.fill("");
+  }
+
+  /* Change the number of cells (9 for 3x3, 25 for 5x5). */
+  resize(size) {
+    this.size = size;
+    this.board = Array(size).fill("");
   }
 
   placeMark(index, mark) {
@@ -90,18 +107,49 @@ class GameBoard {
 }
 
 /* Create the game board instance */
-const gameBoard = new GameBoard();
+const gameBoard = new GameBoard(9);
 board = gameBoard.getBoard();
 
 /* =========================================================
-   WINNING COMBINATIONS
+   DIFFICULTY LEVELS AND WINNING COMBINATIONS
+   Easy/Medium: 3x3, three in a row.
+   Hard: 5x5, five in a row.
    ========================================================= */
 
-const wins = [
-  [0, 1, 2], [3, 4, 5], [6, 7, 8],
-  [0, 3, 6], [1, 4, 7], [2, 5, 8],
-  [0, 4, 8], [2, 4, 6]
-];
+const LEVELS = {
+  easy:   { size: 3, winLength: 3 },
+  medium: { size: 3, winLength: 3 },
+  hard:   { size: 5, winLength: 5 }
+};
+
+/* Every horizontal, vertical and diagonal run of `k` cells on a size x size board. */
+function buildWinLines(size, k) {
+  const lines = [];
+  const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
+
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      for (const [dr, dc] of directions) {
+        const endRow = r + dr * (k - 1);
+        const endCol = c + dc * (k - 1);
+
+        if (endRow < 0 || endRow >= size || endCol < 0 || endCol >= size) {
+          continue;
+        }
+
+        lines.push(
+          Array.from({ length: k }, (_, i) =>
+            (r + dr * i) * size + (c + dc * i)
+          )
+        );
+      }
+    }
+  }
+
+  return lines;
+}
+
+let wins = buildWinLines(3, 3);
 
 /* =========================================================
    THEMES
@@ -207,59 +255,191 @@ function renderScores() {
 }
 
 /* =========================================================
-   GAME MODE AND RESTART
+   BOARD BUILDING AND VISIBILITY
+   ========================================================= */
+
+/* Create empty cells for a size x size board. Cells start disabled. */
+function buildBoardCells(size) {
+  if (!boardEl) return;
+
+  boardEl.replaceChildren();
+  boardEl.style.setProperty("--cols", String(size));
+  boardEl.dataset.size = String(size);
+
+  cells = [];
+
+  for (let i = 0; i < size * size; i++) {
+    const cell = document.createElement("button");
+
+    cell.type = "button";
+    cell.className = "cell";
+    cell.dataset.index = String(i);
+    cell.disabled = true;
+    cell.setAttribute("aria-label", `Cell ${i + 1}, empty`);
+
+    boardEl.append(cell);
+    cells.push(cell);
+  }
+}
+
+/* Prepare an empty board for a level without showing it. */
+function configureBoard(level) {
+  const config = LEVELS[level];
+
+  boardSize = config.size;
+  winLength = config.winLength;
+  wins = buildWinLines(boardSize, winLength);
+
+  gameBoard.resize(boardSize * boardSize);
+  board = gameBoard.getBoard();
+
+  buildBoardCells(boardSize);
+}
+
+function clearBoardCells() {
+  boardEl?.replaceChildren();
+  cells = [];
+
+  gameBoard.reset();
+  board = gameBoard.getBoard();
+}
+
+/* Switch between the setup screen (visible = false) and the
+   gameplay screen (visible = true). The Back button is shown
+   only on the gameplay screen. */
+function showBoard(visible) {
+  if (boardSection) boardSection.hidden = !visible;
+  layoutCanvas?.classList.toggle("board-hidden", !visible);
+  layoutCanvas?.classList.toggle("playing", visible);
+
+  const backSection = $("#backSection");
+  if (backSection) backSection.hidden = !visible;
+}
+
+function updateLevelButtons() {
+  $$("[data-level]").forEach(button => {
+    const selected = button.dataset.level === selectedLevel;
+
+    button.classList.toggle("active", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+}
+
+/* Back to the "before Start game" state: board hidden, no round running. */
+function enterSetupState(message) {
+  clearTimeout(aiTimer);
+  clearTimeout(overlayTimer);
+
+  $("#victoryOverlay")?.remove();
+
+  gameActive = false;
+  aiThinking = false;
+  resultSaved = false;
+  roundId = null;
+
+  showBoard(false);
+
+  if (selectedLevel) {
+    configureBoard(selectedLevel);
+  } else {
+    clearBoardCells();
+  }
+
+  setStatus(
+    message ||
+    (selectedLevel
+      ? "Press Start game to play"
+      : "Choose a difficulty to begin")
+  );
+}
+
+/* =========================================================
+   GAME MODE, DIFFICULTY, START AND RESET
    ========================================================= */
 
 function setMode(newMode) {
-  if (newMode !== mode) {
-    scores = { player: 0, ai: 0, draws: 0 };
-    renderScores();
-  }
+  if (newMode === mode) return;
+
+  scores = { player: 0, ai: 0, draws: 0 };
+  renderScores();
 
   mode = newMode;
 
   $("#aiModeBtn")?.classList.toggle("active", mode === "ai");
   $("#twoPlayerBtn")?.classList.toggle("active", mode === "two");
 
-  startGame();
+  enterSetupState();
+}
+
+function selectLevel(level) {
+  if (!LEVELS[level] || level === selectedLevel) return;
+
+  selectedLevel = level;
+
+  scores = { player: 0, ai: 0, draws: 0 };
+  renderScores();
+
+  updateLevelButtons();
+  enterSetupState();
+  playSound(440, 0.08);
+}
+
+/* Called by the Start game button. Returns true if a new game started. */
+function beginGame() {
+  if (!selectedLevel) {
+    setStatus("Choose a difficulty first");
+    showToast("Please choose Easy, Medium or Hard first.");
+    return false;
+  }
+
+  /* A round is already running: ignore repeated clicks. */
+  if (gameActive) return false;
+
+  return startGame();
 }
 
 function startGame() {
+  if (!selectedLevel) return false;
+
   clearTimeout(aiTimer);
   clearTimeout(overlayTimer);
 
   $("#victoryOverlay")?.remove();
 
+  /* Fresh, empty cells for the selected level (no leftovers). */
+  configureBoard(selectedLevel);
+
   cells.forEach(cell => {
-    cell.classList.remove("winning-cell");
+    cell.disabled = false;
   });
 
-  // Reset the board through the GameBoard class.
-  gameBoard.reset();
-  board = gameBoard.getBoard();
+  showBoard(true);
 
   gameActive = true;
   aiThinking = false;
   resultSaved = false;
+  roundMode = mode;
 
   roundId =
     `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-  cells.forEach((cell, index) => {
-    cell.textContent = "";
-    cell.disabled = false;
-
-    delete cell.dataset.mark;
-
-    cell.setAttribute(
-      "aria-label",
-      `Cell ${index + 1}, empty`
-    );
-  });
-
   setStatus(
     mode === "ai" ? "Your turn — X" : "Player X's turn"
   );
+
+  return true;
+}
+
+/* Reset button: scoreboard, board, message and difficulty choice.
+   Saved game history (localStorage and Supabase) is not touched. */
+function resetAll() {
+  scores = { player: 0, ai: 0, draws: 0 };
+  renderScores();
+
+  selectedLevel = null;
+  updateLevelButtons();
+
+  enterSetupState("Choose a difficulty to begin");
 }
 
 /* =========================================================
@@ -267,13 +447,11 @@ function startGame() {
    ========================================================= */
 
 function checkWinner(position) {
-  for (const [a, b, c] of wins) {
-    if (
-      position[a] &&
-      position[a] === position[b] &&
-      position[b] === position[c]
-    ) {
-      return position[a];
+  for (const line of wins) {
+    const first = position[line[0]];
+
+    if (first && line.every(index => position[index] === first)) {
+      return first;
     }
   }
 
@@ -281,11 +459,11 @@ function checkWinner(position) {
 }
 
 function getWinningLine(position) {
-  return wins.find(([a, b, c]) =>
-    position[a] &&
-    position[a] === position[b] &&
-    position[b] === position[c]
-  ) || [];
+  return wins.find(line => {
+    const first = position[line[0]];
+
+    return first && line.every(index => position[index] === first);
+  }) || [];
 }
 
 /* =========================================================
@@ -391,14 +569,18 @@ function updateCell(index, mark) {
    ========================================================= */
 
 function handleCellClick(event) {
-  const index = Number(event.currentTarget.dataset.index);
+  const cellEl = event.target.closest(".cell");
+
+  if (!cellEl) return;
+
+  const index = Number(cellEl.dataset.index);
 
   if (
     !gameActive ||
     aiThinking ||
     !Number.isInteger(index) ||
     index < 0 ||
-    index > 8 ||
+    index >= board.length ||
     board[index]
   ) {
     return;
@@ -420,9 +602,9 @@ function handleCellClick(event) {
     aiTimer = setTimeout(() => {
       if (!gameActive) return;
 
-      const move = getBestMove(board);
+      const move = pickAiMove(board);
 
-      if (move !== -1) {
+      if (Number.isInteger(move) && move !== -1) {
         updateCell(move, "O");
       }
 
@@ -451,73 +633,152 @@ function handleCellClick(event) {
 }
 
 /* =========================================================
-   AI — MINIMAX ALGORITHM
+   AI — DIFFICULTY LEVELS
+   The AI plays "O". The human plays "X".
+   Easy:   random valid move.
+   Medium: takes a win, blocks X's win, prefers the center.
+   Hard:   win, block, then fork creation/blocking and a
+           line-scoring heuristic (used on the 5x5 board).
    ========================================================= */
 
-function minimax(position, maximizing, depth = 0) {
-  const result = checkWinner(position);
+function emptyIndexes(position) {
+  const empty = [];
 
-  if (result === "O") return 10 - depth;
-  if (result === "X") return depth - 10;
-  if (result === "draw") return 0;
+  position.forEach((value, i) => {
+    if (!value) empty.push(i);
+  });
 
-  if (maximizing) {
-    let best = -Infinity;
-
-    for (let i = 0; i < 9; i++) {
-      if (position[i]) continue;
-
-      position[i] = "O";
-
-      best = Math.max(
-        best,
-        minimax(position, false, depth + 1)
-      );
-
-      position[i] = "";
-    }
-
-    return best;
-  }
-
-  let best = Infinity;
-
-  for (let i = 0; i < 9; i++) {
-    if (position[i]) continue;
-
-    position[i] = "X";
-
-    best = Math.min(
-      best,
-      minimax(position, true, depth + 1)
-    );
-
-    position[i] = "";
-  }
-
-  return best;
+  return empty;
 }
 
-function getBestMove(position) {
+function randomFrom(list) {
+  return list.length
+    ? list[Math.floor(Math.random() * list.length)]
+    : -1;
+}
+
+/* If `line` needs exactly one more `mark` to be complete, return that empty cell. */
+function lineThreat(position, line, mark) {
+  let own = 0;
+  let emptyCount = 0;
+  let emptyIndex = -1;
+
+  for (const i of line) {
+    if (position[i] === mark) {
+      own++;
+    } else if (!position[i]) {
+      emptyCount++;
+      emptyIndex = i;
+    }
+  }
+
+  return own === winLength - 1 && emptyCount === 1 ? emptyIndex : -1;
+}
+
+/* A move that wins the game immediately for `mark`, or -1. */
+function findCompletingMove(position, mark) {
+  for (const line of wins) {
+    const spot = lineThreat(position, line, mark);
+
+    if (spot !== -1) return spot;
+  }
+
+  return -1;
+}
+
+/* How many different cells would win the game for `mark` right now. */
+function countThreats(position, mark) {
+  const spots = new Set();
+
+  for (const line of wins) {
+    const spot = lineThreat(position, line, mark);
+
+    if (spot !== -1) spots.add(spot);
+  }
+
+  return spots.size;
+}
+
+/* Heuristic value of playing `index`: open lines count more as they fill up. */
+function scoreCell(position, index, me, opponent) {
+  let score = 0;
+
+  for (const line of wins) {
+    if (!line.includes(index)) continue;
+
+    let mine = 0;
+    let theirs = 0;
+
+    for (const i of line) {
+      if (position[i] === me) mine++;
+      else if (position[i] === opponent) theirs++;
+    }
+
+    if (mine && theirs) continue;
+
+    if (!theirs) score += Math.pow(4, mine);
+    if (!mine) score += Math.pow(4, theirs) * 0.9;
+  }
+
+  return score;
+}
+
+function pickEasyMove(position) {
+  return randomFrom(emptyIndexes(position));
+}
+
+function pickMediumMove(position) {
+  const win = findCompletingMove(position, "O");
+  if (win !== -1) return win;
+
+  const block = findCompletingMove(position, "X");
+  if (block !== -1) return block;
+
+  const center = Math.floor(position.length / 2);
+  if (!position[center]) return center;
+
+  return randomFrom(emptyIndexes(position));
+}
+
+function pickHardMove(position) {
+  const win = findCompletingMove(position, "O");
+  if (win !== -1) return win;
+
+  const block = findCompletingMove(position, "X");
+  if (block !== -1) return block;
+
   let bestScore = -Infinity;
-  let bestMove = -1;
+  let best = [];
 
-  for (let i = 0; i < 9; i++) {
-    if (position[i]) continue;
+  emptyIndexes(position).forEach(i => {
+    let score = scoreCell(position, i, "O", "X");
 
+    /* Create two winning threats at once. */
     position[i] = "O";
+    if (countThreats(position, "O") >= 2) score += 1000;
 
-    const score = minimax(position, false);
+    /* Take the cell where X would create two threats at once. */
+    position[i] = "X";
+    if (countThreats(position, "X") >= 2) score += 500;
 
     position[i] = "";
 
     if (score > bestScore) {
       bestScore = score;
-      bestMove = i;
+      best = [i];
+    } else if (score === bestScore) {
+      best.push(i);
     }
-  }
+  });
 
-  return bestMove;
+  return randomFrom(best);
+}
+
+function pickAiMove(position) {
+  if (selectedLevel === "easy") return pickEasyMove(position);
+  if (selectedLevel === "hard") return pickHardMove(position);
+
+  return pickMediumMove(position);
 }
 
 /* =========================================================
@@ -705,10 +966,12 @@ function persistHistory() {
   store.set(HISTORY_KEY, JSON.stringify(historyLog));
 }
 
-function resultLabel(result) {
+/* Value saved to the database. These match the table's accepted values:
+   'AI Win', 'Player X Win', 'Player O Win', 'Draw'. */
+function resultLabel(result, gameMode = mode) {
   if (result === "draw") return "Draw";
 
-  if (mode === "two") {
+  if (gameMode === "two") {
     return result === "X"
       ? "Player X Win"
       : "Player O Win";
@@ -724,15 +987,34 @@ function normalizeResult(value) {
     "draw": "Draw",
     "ai win": "AI Win",
     "ai wins": "AI Win",
+    "ai won": "AI Win",
     "player win": "Player X Win",
     "player wins": "Player X Win",
     "player x win": "Player X Win",
     "player x wins": "Player X Win",
+    "player x won": "Player X Win",
     "player o win": "Player O Win",
-    "player o wins": "Player O Win"
+    "player o wins": "Player O Win",
+    "player o won": "Player O Win"
   };
 
   return known[normalized] || null;
+}
+
+/* Label shown to the player in Game history. */
+const RESULT_DISPLAY = {
+  "AI Win": "AI Won",
+  "Player X Win": "Player X Won",
+  "Player O Win": "Player O Won",
+  "Draw": "Draw"
+};
+
+function displayResult(value) {
+  const normalized = normalizeResult(value);
+
+  return normalized
+    ? RESULT_DISPLAY[normalized]
+    : (value || "Game result");
 }
 
 function saveGameResult(result) {
@@ -743,7 +1025,7 @@ function saveGameResult(result) {
   historyLog.push({
     local_key: roundId,
     id: null,
-    result: resultLabel(result),
+    result: resultLabel(result, roundMode),
     created_at: new Date().toISOString(),
     synced: false
   });
@@ -903,10 +1185,7 @@ function renderHistory() {
     const title = document.createElement("strong");
     const details = document.createElement("small");
 
-    title.textContent =
-      normalizeResult(record.result) ||
-      record.result ||
-      "Game result";
+    title.textContent = displayResult(record.result);
 
     const hasNumericId =
       record.id !== null &&
@@ -1030,19 +1309,43 @@ on("#feedbackMenuBtn", "click", () => {
 on("#aiModeBtn", "click", () => setMode("ai"));
 on("#twoPlayerBtn", "click", () => setMode("two"));
 
+$$("[data-level]").forEach(button => {
+  button.addEventListener("click", () => {
+    selectLevel(button.dataset.level);
+    button.blur();
+  });
+});
+
 on("#startBtn", "click", () => {
-  startGame();
-  playSound(500, 0.12);
+  if (beginGame()) {
+    playSound(500, 0.12);
+  }
+
+  /* Release focus so the button never stays in a pressed-looking state. */
+  $("#startBtn")?.blur();
 });
 
 on("#restartBtn", "click", () => {
-  startGame();
+  resetAll();
   playSound(380, 0.1);
+
+  $("#restartBtn")?.blur();
+  $("#startBtn")?.blur();
 });
 
-cells.forEach(cell => {
-  cell.addEventListener("click", handleCellClick);
+/* Back button (gameplay screen only): ends the current round and returns
+   to the setup screen. enterSetupState() clears the AI and overlay timers,
+   removes the victory overlay and resets the round state, so the old
+   session cannot interfere with the next game. */
+on("#backBtn", "click", () => {
+  enterSetupState();
+  playSound(380, 0.1);
+
+  $("#backBtn")?.blur();
 });
+
+/* One listener for all cells, including cells created later. */
+boardEl?.addEventListener("click", handleCellClick);
 
 on("#refreshHistoryBtn", "click", loadGameHistory);
 
@@ -1535,7 +1838,10 @@ function restorePreferences() {
 restorePreferences();
 renderScores();
 renderHistory();
-startGame();
+
+/* The board starts hidden: no difficulty chosen, no game started. */
+updateLevelButtons();
+enterSetupState();
 
 syncHistory({ quiet: true })
   .then(() => loadGameHistory())
