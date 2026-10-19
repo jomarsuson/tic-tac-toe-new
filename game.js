@@ -1851,3 +1851,24 @@ syncHistory({ quiet: true })
       error
     );
   });
+  
+/* START GAME AND RESET — REPLAY CLICK EFFECT ON EVERY CLICK */
+
+document.addEventListener("click", function (event) {
+  const button = event.target.closest("#startBtn, #restartBtn");
+
+  if (!button || button.disabled) return;
+
+  button.classList.remove("button-click-effect");
+
+  // I-restart ang animation sa bawat click.
+  void button.offsetWidth;
+
+  button.classList.add("button-click-effect");
+});
+
+document.addEventListener("animationend", function (event) {
+  if (event.animationName !== "button-click-feedback") return;
+
+  event.target.classList.remove("button-click-effect");
+});
