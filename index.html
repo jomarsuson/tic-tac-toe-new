@@ -19,10 +19,15 @@
   </header>
 
   <main>
-    <div class="layout-canvas" id="layoutCanvas">
+    <div class="layout-canvas board-hidden" id="layoutCanvas">
+      <!-- Back button: visible only on the gameplay screen (toggled by game.js) -->
+      <section class="back-section design-item" id="backSection" hidden>
+        <button class="secondary-btn" id="backBtn" type="button" aria-label="Back to game setup">← Back</button>
+      </section>
+
       <section class="mode-section design-item">
         <div class="section-heading">
-          <h2>Choose your game</h2>
+          <h2>Choose your opponent</h2>
           <p>Play against the computer or challenge a friend.</p>
         </div>
         <div class="mode-buttons">
@@ -39,28 +44,39 @@
         </div>
       </section>
 
-      <section class="status-section design-item" aria-live="polite">
-        <p id="status">Your turn — X</p>
+      <section class="difficulty-section design-item" id="difficultySection">
+        <div class="section-heading">
+          <h2>Choose difficulty</h2>
+          <p>Pick a level, then press Start game.</p>
+        </div>
+        <div class="mode-buttons difficulty-buttons">
+          <button class="mode-btn" id="easyBtn" type="button" data-level="easy" aria-pressed="false">
+            <span>Easy</span>
+            <small>Beginner friendly</small>
+          </button>
+          <button class="mode-btn" id="mediumBtn" type="button" data-level="medium" aria-pressed="false">
+            <span>Medium</span>
+            <small>A smarter opponent</small>
+          </button>
+          <button class="mode-btn" id="hardBtn" type="button" data-level="hard" aria-pressed="false">
+            <span>Hard</span>
+            <small>Tough challenge</small>
+          </button>
+        </div>
       </section>
 
-      <section class="board-section design-item" aria-label="Game board">
-        <div class="board" role="group" aria-label="Tic-Tac-Toe board">
-          <button class="cell" type="button" data-index="0" aria-label="Cell 1"></button>
-          <button class="cell" type="button" data-index="1" aria-label="Cell 2"></button>
-          <button class="cell" type="button" data-index="2" aria-label="Cell 3"></button>
-          <button class="cell" type="button" data-index="3" aria-label="Cell 4"></button>
-          <button class="cell" type="button" data-index="4" aria-label="Cell 5"></button>
-          <button class="cell" type="button" data-index="5" aria-label="Cell 6"></button>
-          <button class="cell" type="button" data-index="6" aria-label="Cell 7"></button>
-          <button class="cell" type="button" data-index="7" aria-label="Cell 8"></button>
-          <button class="cell" type="button" data-index="8" aria-label="Cell 9"></button>
-        </div>
+      <section class="status-section design-item" aria-live="polite">
+        <p id="status">Choose a difficulty to begin</p>
+      </section>
+
+      <section class="board-section design-item" id="boardSection" aria-label="Game board" hidden>
+        <div class="board" id="board" role="group" aria-label="Tic-Tac-Toe board"></div>
       </section>
 
       <section class="controls-section design-item">
         <div class="game-buttons">
           <button class="primary-btn" id="startBtn" type="button">Start game</button>
-          <button class="secondary-btn" id="restartBtn" type="button">Restart round</button>
+          <button class="secondary-btn" id="restartBtn" type="button">Reset</button>
         </div>
       </section>
 
