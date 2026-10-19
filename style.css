@@ -802,3 +802,63 @@ textarea.field { resize: vertical; min-height: 130px; }
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
+
+/* =========================================================
+   50. START GAME AND RESET BUTTON ANIMATIONS
+   Smooth hover, press, at click feedback.
+   ========================================================= */
+
+#startBtn,
+#restartBtn {
+  position: relative;
+  overflow: hidden;
+  transform-origin: center;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease,
+    border-color 0.2s ease;
+}
+
+/* Hover animation */
+@media (hover: hover) and (pointer: fine) {
+  #startBtn:hover,
+  #restartBtn:hover {
+    transform: translateY(-3px);
+    filter: brightness(1.1);
+    border-color: var(--accent);
+    box-shadow: 0 10px 26px color-mix(
+      in srgb, var(--accent) 22%, transparent
+    );
+  }
+}
+
+/* Press animation */
+#startBtn:active,
+#restartBtn:active {
+  transform: translateY(1px) scale(0.97);
+  filter: brightness(0.95);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+}
+
+/* Keyboard focus */
+#startBtn:focus-visible,
+#restartBtn:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  #startBtn,
+  #restartBtn {
+    transition: none;
+  }
+
+  #startBtn:hover,
+  #restartBtn:hover,
+  #startBtn:active,
+  #restartBtn:active {
+    transform: none;
+  }
+}
