@@ -357,27 +357,26 @@ function enterSetupState(message) {
    GAME MODE, DIFFICULTY, START AND RESET
    ========================================================= */
 
+
 function setMode(newMode) {
   if (newMode === mode) return;
 
-  scores = { player: 0, ai: 0, draws: 0 };
-  renderScores();
-
+  // Change the game mode without resetting the scoreboard.
   mode = newMode;
 
   $("#aiModeBtn")?.classList.toggle("active", mode === "ai");
   $("#twoPlayerBtn")?.classList.toggle("active", mode === "two");
 
+  // Return to setup while keeping the current scores.
   enterSetupState();
 }
+
 
 function selectLevel(level) {
   if (!LEVELS[level] || level === selectedLevel) return;
 
+  // Select the difficulty without resetting the scoreboard.
   selectedLevel = level;
-
-  scores = { player: 0, ai: 0, draws: 0 };
-  renderScores();
 
   updateLevelButtons();
   enterSetupState();
