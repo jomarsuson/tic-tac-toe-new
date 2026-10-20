@@ -118,8 +118,8 @@ board = gameBoard.getBoard();
 
 const LEVELS = {
   easy:   { size: 3, winLength: 3 },
-  medium: { size: 3, winLength: 3 },
-  hard:   { size: 5, winLength: 5 }
+  medium: { size: 4, winLength: 3 },
+  hard:   { size: 5, winLength: 4 }
 };
 
 /* Every horizontal, vertical and diagonal run of `k` cells on a size x size board. */
