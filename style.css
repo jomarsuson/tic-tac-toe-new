@@ -1,8 +1,3 @@
-
-/* =========================================================
-   01. GLOBAL COLORS AND THEME VARIABLES
-   Dito makikita ang mga pangunahing kulay ng buong website.
-   ========================================================= */
 :root {
   --page: #211a35;
   --card: #302644;
@@ -16,17 +11,12 @@
   color-scheme: dark;
 }
 
-/* =========================================================
-   02. GLOBAL RESET AND PAGE SETTINGS
-   Pangkalahatang box sizing, page height at smooth scrolling.
-   ========================================================= */
+  /* 02. GLOBAL RESET AND PAGE SETTINGS*/
+
 * { box-sizing: border-box; }
 html { min-height: 100%; scroll-behavior: smooth; }
 
-/* =========================================================
-   03. BODY AND MAIN PAGE BACKGROUND
-   Background gradient, default text color at font.
-   ========================================================= */
+/*03. BODY AND MAIN PAGE BACKGROUND*/
 body {
   margin: 0;
   min-height: 100vh;
@@ -36,10 +26,10 @@ body {
   transition: background .25s ease, color .25s ease;
 }
 
-/* =========================================================
+/* 
    04. DEFAULT BUTTONS AND INPUT FONTS
    Font inheritance at focus outline ng controls.
-   ========================================================= */
+ */
 button, input, textarea { font: inherit; }
 button { -webkit-tap-highlight-color: transparent; }
 
@@ -48,10 +38,10 @@ button:focus-visible, input:focus-visible {
   outline-offset: 3px;
 }
 
-/* =========================================================
+/*
    05. TOP NAVIGATION BAR
    Layout at spacing ng header sa itaas ng website.
-   ========================================================= */
+ */
 .topbar {
   width: min(1120px, calc(100% - 32px));
   margin: 0 auto;
@@ -62,18 +52,18 @@ button:focus-visible, input:focus-visible {
   gap: 16px;
 }
 
-/* =========================================================
+/* 
    06. WEBSITE BRAND AND TITLE
    Pangalan ng laro at subtitle.
-   ========================================================= */
+ */
 .brand { text-align: center; }
 .brand h1 { margin: 0; font-size: clamp(1.3rem, 3vw, 2rem); letter-spacing: -.04em; }
 .brand p { margin: 6px 0 0; color: var(--muted); font-size: .72rem; font-weight: 800; letter-spacing: .18em; }
 
-/* =========================================================
+/* 
    07. HEADER ICON BUTTONS
    Style ng mga button sa header.
-   ========================================================= */
+  */
 .icon-btn {
   justify-self: start;
   display: inline-flex;
@@ -93,16 +83,16 @@ button:focus-visible, input:focus-visible {
 .icon-btn:hover { transform: translateY(-2px); border-color: var(--accent); }
 .menu-btn { justify-self: end; min-width: 44px; }
 
-/* =========================================================
+/*
    08. MAIN CONTENT WIDTH
    Lapad at alignment ng pangunahing content.
-   ========================================================= */
+*/
 main { width: min(1000px, calc(100% - 32px)); margin: 0 auto 60px; }
 
-/* =========================================================
+/*
    09. MAIN GAME CONTAINER
    Pangunahing panel, background, border at shadow ng laro.
-   ========================================================= */
+ */
 .layout-canvas {
   position: relative;
   min-height: 720px;
@@ -115,31 +105,31 @@ main { width: min(1000px, calc(100% - 32px)); margin: 0 auto 60px; }
   backdrop-filter: blur(12px);
 }
 
-/* =========================================================
+/*
    10. SECTION SPACING AND HEADINGS
    Margin at text alignment ng mga section.
-   ========================================================= */
+ */
 .design-item { position: relative; margin: 0 auto 26px; }
 .section-heading { text-align: center; margin-bottom: 18px; }
 .section-heading h2 { margin: 0; font-size: 1.15rem; }
 .section-heading p, .settings-description { color: var(--muted); margin: 7px 0 0; font-size: .9rem; }
 
-/* =========================================================
+/* 
    11. GAME MODE BUTTON LAYOUT
    Layout ng VS AI at Two Player buttons.
-   ========================================================= */
+*/
 .mode-buttons { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 
-/* =========================================================
+/*
    12. DIFFICULTY BUTTON LAYOUT
    Tatlong column para sa Easy, Medium at Hard.
-   ========================================================= */
+*/
 .difficulty-buttons { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
-/* =========================================================
+/*
    13. GAME MODE AND DIFFICULTY BUTTON DESIGN
    Background, border, shadow at size ng pagpipilian.
-   ========================================================= */
+*/
 .mode-btn {
   display: grid;
   justify-items: center;
@@ -169,10 +159,10 @@ main { width: min(1000px, calc(100% - 32px)); margin: 0 auto 60px; }
 .mode-btn > span:not(.mode-icon) { font-weight: 800; }
 .mode-btn small { color: var(--muted); font-size: .76rem; }
 
-/* =========================================================
+/* 
    14. GAME STATUS MESSAGE
    Text na nagsasabi kung sino ang kasalukuyang turn.
-   ========================================================= */
+ */
 .status-section { text-align: center; padding: 12px; margin-bottom: 18px; }
 
 #status {
@@ -186,19 +176,19 @@ main { width: min(1000px, calc(100% - 32px)); margin: 0 auto 60px; }
   border: 1px solid var(--border);
 }
 
-/* =========================================================
+/* 
    15. GAME BOARD CONTAINER AND GRID
    Lapad ng board at bilang ng columns na galing sa game.js.
-   ========================================================= */
+ */
 .board-section { width: min(100%, 420px); }
 
 /* --cols: 3 para sa Easy/Medium at 5 para sa Hard */
 .board { display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: 10px; aspect-ratio: 1; }
 
-/* =========================================================
+/*
    16. GAME BOARD CELLS
    Design, size, text at background ng bawat cell.
-   ========================================================= */
+*/
 .cell {
   display: grid;
   place-items: center;
@@ -217,10 +207,10 @@ main { width: min(1000px, calc(100% - 32px)); margin: 0 auto 60px; }
   transition: transform .18s, box-shadow .18s, background .18s, border-color .18s;
 }
 
-/* =========================================================
+/* 
    17. HARD MODE BOARD (5x5)
    Mas maliit na gaps, corners at marks para magkasya.
-   ========================================================= */
+*/
 .board[data-size="5"] { gap: 6px; }
 
 .board[data-size="5"] .cell {
@@ -229,10 +219,10 @@ main { width: min(1000px, calc(100% - 32px)); margin: 0 auto 60px; }
   box-shadow: 0 4px 12px rgba(0,0,0,.10);
 }
 
-/* =========================================================
+/*
    18. X/O COLORS, CELL HOVER AND MARK ANIMATION
    Kulay ng O, hover effect at animation kapag may mark.
-   ========================================================= */
+ */
 .cell[data-mark="O"] { color: var(--text); }
 
 .cell:not(:disabled):hover {
@@ -250,17 +240,17 @@ main { width: min(1000px, calc(100% - 32px)); margin: 0 auto 60px; }
   to { transform: scale(1); opacity: 1; }
 }
 
-/* =========================================================
+/*
    19. GAME CONTROL BUTTON LAYOUT
    Layout ng Start Game at Reset buttons.
-   ========================================================= */
+*/
 .controls-section { width: min(100%, 420px); }
 .game-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-/* =========================================================
+/* 
    20. SHARED PRIMARY AND SECONDARY BUTTON STYLES
    Common size, font, corners at transitions ng buttons.
-   ========================================================= */
+ */
 .primary-btn, .secondary-btn {
   min-height: 44px;
   padding: 11px 16px;
@@ -291,10 +281,10 @@ main { width: min(1000px, calc(100% - 32px)); margin: 0 auto 60px; }
   .primary-btn:hover, .secondary-btn:hover { transform: translateY(-2px); filter: brightness(1.06); }
 }
 
-/* =========================================================
+/*
    21. SCOREBOARD LAYOUT
    Tatlong column para sa scores ng players at AI.
-   ========================================================= */
+ */
 .score-section {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -302,10 +292,10 @@ main { width: min(1000px, calc(100% - 32px)); margin: 0 auto 60px; }
   margin: 28px auto 0;
 }
 
-/* =========================================================
+/* 
    22. SCOREBOARD CARDS
    Background, border, spacing at alignment ng score cards.
-   ========================================================= */
+    */
 .score-card {
   display: grid;
   gap: 8px;
@@ -319,10 +309,10 @@ main { width: min(1000px, calc(100% - 32px)); margin: 0 auto 60px; }
 .score-card span { color: var(--muted); font-size: .78rem; font-weight: 700; }
 .score-card strong { font-size: 1.8rem; color: var(--accent); }
 
-/* =========================================================
+/* 
    23. SETTINGS DRAWER BACKDROP
    Madilim na overlay sa likod ng settings panel.
-   ========================================================= */
+    */
 .drawer-backdrop {
   position: fixed;
   inset: 0;
@@ -335,10 +325,10 @@ main { width: min(1000px, calc(100% - 32px)); margin: 0 auto 60px; }
 
 .drawer-backdrop.open { opacity: 1; visibility: visible; }
 
-/* =========================================================
+/* 
    24. SETTINGS DRAWER PANEL
    Position, width, background at slide-in animation.
-   ========================================================= */
+    */
 .settings-drawer {
   position: fixed;
   z-index: 1001;
@@ -360,26 +350,26 @@ main { width: min(1000px, calc(100% - 32px)); margin: 0 auto 60px; }
 /* Ipinapakita ang drawer kapag may class na open */
 .settings-drawer.open { transform: translateX(0); visibility: visible; }
 
-/* =========================================================
+/* 
    25. SETTINGS DRAWER HEADER
    Title, subtitle at close button ng settings.
-   ========================================================= */
+    */
 .drawer-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 24px; }
 .drawer-header h2 { margin: 0; font-size: 1.5rem; }
 .drawer-header p { margin: 6px 0 0; color: var(--muted); font-size: .9rem; }
 .drawer-header .icon-btn { justify-self: auto; }
 
-/* =========================================================
+/* 
    26. SETTINGS GROUPS AND SECTION TITLES
    Hiwalay na sections sa loob ng settings drawer.
-   ========================================================= */
+    */
 .settings-group { padding: 20px 0; border-top: 1px solid var(--border); }
 .settings-group h3 { margin: 0 0 12px; color: var(--muted); font-size: .7rem; letter-spacing: .16em; }
 
-/* =========================================================
+/* 
    27. SETTINGS ROW BUTTONS
    Layout ng mga option na maaaring pindutin.
-   ========================================================= */
+    */
 .setting-row {
   width: 100%;
   display: flex;
@@ -401,25 +391,25 @@ button.setting-row:hover { background: color-mix(in srgb, var(--accent) 10%, tra
 .setting-copy strong { font-size: .92rem; }
 .setting-copy small { color: var(--muted); font-size: .78rem; }
 
-/* =========================================================
+/* 
    28. SETTINGS TOGGLE SWITCHES
    Itsura at galaw ng on/off switches.
-   ========================================================= */
+    */
 .switch { width: 37px; height: 22px; padding: 3px; border-radius: 99px; background: var(--border); transition: background .2s; }
 .switch::after { content: ""; display: block; width: 16px; height: 16px; border-radius: 50%; background: white; transition: transform .2s; }
 .switch.on { background: var(--accent); }
 .switch.on::after { transform: translateX(15px); }
 
-/* =========================================================
+/* 
    29. THEME SELECTION GRID
    Layout ng mga pagpipiliang theme.
-   ========================================================= */
+    */
 .theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin: 12px 0 18px; }
 
-/* =========================================================
+/* 
    30. THEME OPTION CARDS
    Style ng bawat theme option at selected state.
-   ========================================================= */
+    */
 .theme-option {
   position: relative;
   display: grid;
@@ -440,34 +430,34 @@ button.setting-row:hover { background: color-mix(in srgb, var(--accent) 10%, tra
 .theme-check { display: none; position: absolute; top: 8px; right: 9px; color: var(--accent); font-weight: 900; }
 .theme-option.selected .theme-check { display: inline; }
 
-/* =========================================================
+/* 
    31. CUSTOM THEME COLOR PICKER
    Alignment at style ng color input.
-   ========================================================= */
+    */
 .custom-color { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 0; color: var(--muted); font-size: .88rem; }
 .custom-color input { width: 48px; height: 34px; padding: 2px; background: var(--cell); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; }
 
-/* =========================================================
+/* 
    32. FULL-WIDTH BUTTON AND SETTINGS DESCRIPTION
    Button na sasakop sa buong lapad at description text.
-   ========================================================= */
+    */
 .full-btn { width: 100%; }
 .settings-description { margin-bottom: 14px; line-height: 1.5; }
 
-/* =========================================================
+/* 
    33. GAME HISTORY STATUS AND LIST
    Status text at listahan ng mga nakaraang laro.
-   ========================================================= */
+    */
 .history-status { color: var(--muted); font-size: .9rem; line-height: 1.5; }
 .history-list { display: grid; gap: 10px; list-style: none; margin: 16px 0; padding: 0; }
 .history-list li { display: grid; gap: 5px; padding: 13px; background: var(--cell); border: 1px solid var(--border); border-radius: 12px; }
 .history-list li strong { color: var(--text); }
 .history-list li small { color: var(--muted); }
 
-/* =========================================================
+/* 
    34. TOAST NOTIFICATION
    Maliit na notification na lumalabas sa ibaba ng screen.
-   ========================================================= */
+    */
 .toast {
   position: fixed;
   z-index: 11000;
@@ -492,17 +482,17 @@ button.setting-row:hover { background: color-mix(in srgb, var(--accent) 10%, tra
 /* Itinatago ang anumang element na may hidden attribute */
 [hidden] { display: none !important; }
 
-/* =========================================================
+/* 
    35. BACK BUTTON
    Position at minimum width ng Back button sa gameplay.
-   ========================================================= */
+    */
 .back-section { width: min(100%, 420px); margin-bottom: 18px; }
 .back-section .secondary-btn { min-width: 96px; }
 
-/* =========================================================
+/* 
    36. INITIAL GAME STATUS TEXT
    Plain text ang status kapag hindi pa nagsisimula ang laro.
-   ========================================================= */
+    */
 .layout-canvas:not(.playing) #status {
   padding: 0;
   background: none;
@@ -515,19 +505,19 @@ button.setting-row:hover { background: color-mix(in srgb, var(--accent) 10%, tra
   text-transform: uppercase;
 }
 
-/* =========================================================
+/* 
    37. HIDE SETUP CONTROLS DURING GAMEPLAY
    Itinatago ang mode, difficulty, controls at scoreboard.
-   ========================================================= */
+    */
 .layout-canvas.playing .mode-section,
 .layout-canvas.playing .difficulty-section,
 .layout-canvas.playing .controls-section,
 .layout-canvas.playing .score-section { display: none; }
 
-/* =========================================================
+/* 
    38. WINNING CELL EFFECT
    Highlight at animation sa mga cell na bahagi ng panalo.
-   ========================================================= */
+    */
 .cell.winning-cell {
   position: relative;
   z-index: 1;
@@ -542,10 +532,10 @@ button.setting-row:hover { background: color-mix(in srgb, var(--accent) 10%, tra
   to { transform: scale(1.055); }
 }
 
-/* =========================================================
+/* 
    39. VICTORY OVERLAY
    Full-screen overlay kapag may nanalo o draw.
-   ========================================================= */
+    */
 .victory-overlay {
   position: fixed;
   inset: 0;
@@ -559,10 +549,10 @@ button.setting-row:hover { background: color-mix(in srgb, var(--accent) 10%, tra
   animation: victory-fade-in 220ms ease-out both;
 }
 
-/* =========================================================
+/* 
    40. VICTORY POPUP PANEL
    Main popup panel na nagpapakita ng resulta ng laro.
-   ========================================================= */
+    */
 .victory-panel {
   position: relative;
   z-index: 2;
@@ -590,10 +580,10 @@ button.setting-row:hover { background: color-mix(in srgb, var(--accent) 10%, tra
 /* Victory description */
 .victory-panel p { margin: 0 0 24px; color: var(--muted); }
 
-/* =========================================================
+/* 
    41. PLAY AGAIN BUTTON
    Style at hover effect ng button sa victory popup.
-   ========================================================= */
+    */
 .victory-play-again {
   border: 0;
   border-radius: 999px;
@@ -612,10 +602,10 @@ button.setting-row:hover { background: color-mix(in srgb, var(--accent) 10%, tra
 /* Ibang title color kapag draw ang resulta */
 .victory-overlay.is-draw .victory-panel h2 { color: var(--text); text-shadow: none; }
 
-/* =========================================================
+/* 
    42. CONFETTI EFFECT
    Maliliit na colored pieces na bumabagsak kapag may panalo.
-   ========================================================= */
+    */
 .confetti-piece {
   position: absolute;
   top: -14px;
@@ -647,10 +637,10 @@ button.setting-row:hover { background: color-mix(in srgb, var(--accent) 10%, tra
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* =========================================================
+/* 
    43. DESKTOP LAYOUT (760px AND ABOVE)
    Two-column layout at positioning ng game sections.
-   ========================================================= */
+    */
 @media (min-width: 760px) {
   .layout-canvas {
     display: grid;
@@ -686,10 +676,10 @@ button.setting-row:hover { background: color-mix(in srgb, var(--accent) 10%, tra
   .layout-canvas.playing .board-section  { grid-column: 1; grid-row: 3; width: 100%; }
 }
 
-/* =========================================================
+/* 
    44. MOBILE RESPONSIVE LAYOUT (600px AND BELOW)
    Pag-aayos ng header, buttons, board at settings sa mobile.
-   ========================================================= */
+    */
 @media (max-width: 600px) {
   .topbar { width: calc(100% - 22px); gap: 8px; padding: 16px 0; }
   .brand h1 { font-size: 1.12rem; }
@@ -707,10 +697,10 @@ button.setting-row:hover { background: color-mix(in srgb, var(--accent) 10%, tra
   .settings-drawer { padding: 20px; }
 }
 
-/* =========================================================
+/* 
    45. SUGGESTIONS AND COMMENTS FORM
    Layout ng feedback form sa comments drawer.
-   ========================================================= */
+    */
 .feedback-form { display: grid; gap: 6px; padding-top: 20px; border-top: 1px solid var(--border); }
 
 /* Feedback form field labels */
@@ -737,10 +727,10 @@ textarea.field { resize: vertical; min-height: 130px; }
 /* Character count o hint sa ilalim ng field */
 .field-hint { margin: 0; text-align: right; color: var(--muted); font-size: .76rem; }
 
-/* =========================================================
+/* 
    46. FEEDBACK STATUS MESSAGES
    Message kapag nag-submit, may error, o successful.
-   ========================================================= */
+    */
 .feedback-status { min-height: 1.4em; margin: 8px 0 4px; color: var(--muted); font-size: .88rem; line-height: 1.45; }
 .feedback-status.error { color: #e5736b; }
 .feedback-status.ok { color: var(--accent); }
@@ -748,16 +738,16 @@ textarea.field { resize: vertical; min-height: 130px; }
 /* Disabled submit button */
 .primary-btn:disabled { opacity: .6; cursor: progress; transform: none; }
 
-/* =========================================================
+/* 
    47. HIDDEN HONEYPOT FIELD
    Nakatagong field na maaaring gamitin para sa spam protection.
-   ========================================================= */
+    */
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; opacity: 0; }
 
-/* =========================================================
+/* 
    48. ACCESSIBILITY: REDUCED MOTION
    Binabawasan ang animation para sa users na mas gusto ito.
-   ========================================================= */
+    */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: .01ms !important;
