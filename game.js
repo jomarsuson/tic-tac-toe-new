@@ -1,12 +1,3 @@
-/* =========================================================
-   TIC-TAC-TOE — UPDATED JAVASCRIPT
-   GameBoard Class + Game history + numeric IDs + suggestions
-   Philippine date/time + legacy_id support
-   + Difficulty levels (Easy/Medium 3x3, Hard 5x5)
-   + Board hidden until Start game
-   + Gameplay screen with Back button
-   ========================================================= */
-
 const SUPABASE_URL = "https://faleqiuiuejqwanxtfbs.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_AA2Kw2wYE5DLgjFziFn8Gw_62CojRdk";
 
@@ -34,7 +25,6 @@ const store = {
   }
 };
 
-/* Cells are now created by buildBoardCells() to match the difficulty. */
 let cells = [];
 const boardEl = $("#board");
 const boardSection = $("#boardSection");
@@ -45,9 +35,8 @@ const historyDrawer = $("#historyDrawer");
 const feedbackDrawer = $("#feedbackDrawer");
 const backdrop = $("#drawerBackdrop");
 
-/* =========================================================
-   GAME VARIABLES
-   ========================================================= */
+
+  // GAME VARIABLES
 
 let board;
 let gameActive = false;
@@ -66,9 +55,9 @@ let toastTimer;
 let aiTimer = null;
 let overlayTimer = null;
 
-/* =========================================================
-   GAME BOARD CLASS — OBJECT-ORIENTED PROGRAMMING
-   ========================================================= */
+
+// GAME BOARD CLASS — OBJECT-ORIENTED PROGRAMMING
+
 
 class GameBoard {
   constructor(size = 9) {
@@ -80,7 +69,7 @@ class GameBoard {
     this.board.fill("");
   }
 
-  /* Change the number of cells (9 for 3x3, 25 for 5x5). */
+  // Change the number of cells (9 for 3x3, 25 for 5x5). 
   resize(size) {
     this.size = size;
     this.board = Array(size).fill("");
@@ -106,15 +95,11 @@ class GameBoard {
   }
 }
 
-/* Create the game board instance */
+// Create the game board instance 
 const gameBoard = new GameBoard(9);
 board = gameBoard.getBoard();
 
-/* =========================================================
-   DIFFICULTY LEVELS AND WINNING COMBINATIONS
-   Easy/Medium: 3x3, three in a row.
-   Hard: 5x5, five in a row.
-   ========================================================= */
+ // DIFFICULTY LEVELS AND WINNING COMBINATIONS 
 
 const LEVELS = {
   easy:   { size: 3, winLength: 3 },
@@ -122,7 +107,7 @@ const LEVELS = {
   hard:   { size: 5, winLength: 4 }
 };
 
-/* Every horizontal, vertical and diagonal run of `k` cells on a size x size board. */
+// Every horizontal, vertical and diagonal run of `k` cells on a size x size board. 
 function buildWinLines(size, k) {
   const lines = [];
   const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
@@ -151,9 +136,8 @@ function buildWinLines(size, k) {
 
 let wins = buildWinLines(3, 3);
 
-/* =========================================================
-   THEMES
-   ========================================================= */
+ //  THEMES
+
 
 const themes = {
   chocolate: {
@@ -183,9 +167,9 @@ const themes = {
   }
 };
 
-/* =========================================================
-   GENERAL HELPERS
-   ========================================================= */
+
+//  GENERAL HELPERS
+
 
 function showToast(message) {
   const toast = $("#toast");
@@ -254,11 +238,9 @@ function renderScores() {
   }
 }
 
-/* =========================================================
-   BOARD BUILDING AND VISIBILITY
-   ========================================================= */
+//   BOARD BUILDING AND VISIBILITY
 
-/* Create empty cells for a size x size board. Cells start disabled. */
+// Create empty cells for a size x size board. Cells start disabled. 
 function buildBoardCells(size) {
   if (!boardEl) return;
 
@@ -282,7 +264,7 @@ function buildBoardCells(size) {
   }
 }
 
-/* Prepare an empty board for a level without showing it. */
+// Prepare an empty board for a level without showing
 function configureBoard(level) {
   const config = LEVELS[level];
 
@@ -325,7 +307,7 @@ function updateLevelButtons() {
   });
 }
 
-/* Back to the "before Start game" state: board hidden, no round running. */
+// Back to the "before Start game" state: board hidden, no round running. 
 function enterSetupState(message) {
   clearTimeout(aiTimer);
   clearTimeout(overlayTimer);
@@ -353,9 +335,8 @@ function enterSetupState(message) {
   );
 }
 
-/* =========================================================
-   GAME MODE, DIFFICULTY, START AND RESET
-   ========================================================= */
+
+  // GAME MODE, DIFFICULTY, START AND RESET
 
 
 function setMode(newMode) {
@@ -383,7 +364,7 @@ function selectLevel(level) {
   playSound(440, 0.08);
 }
 
-/* Called by the Start game button. Returns true if a new game started. */
+// Called by the Start game button. Returns true if a new game started. 
 function beginGame() {
   if (!selectedLevel) {
     setStatus("Choose a difficulty first");
@@ -391,7 +372,7 @@ function beginGame() {
     return false;
   }
 
-  /* A round is already running: ignore repeated clicks. */
+  // A round is already running: ignore repeated clicks. 
   if (gameActive) return false;
 
   return startGame();
@@ -405,7 +386,7 @@ function startGame() {
 
   $("#victoryOverlay")?.remove();
 
-  /* Fresh, empty cells for the selected level (no leftovers). */
+  // Fresh, empty cells for the selected level (no leftovers). 
   configureBoard(selectedLevel);
 
   cells.forEach(cell => {
@@ -441,9 +422,8 @@ function resetAll() {
   enterSetupState("Choose a difficulty to begin");
 }
 
-/* =========================================================
-   WINNER DETECTION
-   ========================================================= */
+ //  WINNER DETECTION
+
 
 function checkWinner(position) {
   for (const line of wins) {
@@ -465,9 +445,8 @@ function getWinningLine(position) {
   }) || [];
 }
 
-/* =========================================================
-   VICTORY EFFECT
-   ========================================================= */
+ //  VICTORY EFFECT
+
 
 function showVictoryEffect(result) {
   $("#victoryOverlay")?.remove();
@@ -540,9 +519,9 @@ function showVictoryEffect(result) {
   button.focus();
 }
 
-/* =========================================================
-   PLACE MARK ON THE BOARD
-   ========================================================= */
+
+//   PLACE MARK ON THE BOARD
+
 
 function updateCell(index, mark) {
   // The class validates and places the mark.
@@ -563,9 +542,9 @@ function updateCell(index, mark) {
   playSound(mark === "X" ? 520 : 360);
 }
 
-/* =========================================================
-   PLAYER INPUT AND GAME LOGIC
-   ========================================================= */
+
+ //  PLAYER INPUT AND GAME LOGIC
+
 
 function handleCellClick(event) {
   const cellEl = event.target.closest(".cell");
@@ -631,14 +610,9 @@ function handleCellClick(event) {
   }
 }
 
-/* =========================================================
-   AI — DIFFICULTY LEVELS
-   The AI plays "O". The human plays "X".
-   Easy:   random valid move.
-   Medium: takes a win, blocks X's win, prefers the center.
-   Hard:   win, block, then fork creation/blocking and a
-           line-scoring heuristic (used on the 5x5 board).
-   ========================================================= */
+
+ //  AI — DIFFICULTY LEVELS
+  
 
 function emptyIndexes(position) {
   const empty = [];
@@ -656,7 +630,7 @@ function randomFrom(list) {
     : -1;
 }
 
-/* If `line` needs exactly one more `mark` to be complete, return that empty cell. */
+// If `line` needs exactly one more `mark` to be complete, return that empty cell. 
 function lineThreat(position, line, mark) {
   let own = 0;
   let emptyCount = 0;
@@ -674,7 +648,7 @@ function lineThreat(position, line, mark) {
   return own === winLength - 1 && emptyCount === 1 ? emptyIndex : -1;
 }
 
-/* A move that wins the game immediately for `mark`, or -1. */
+// A move that wins the game immediately for `mark`, or -1. 
 function findCompletingMove(position, mark) {
   for (const line of wins) {
     const spot = lineThreat(position, line, mark);
@@ -685,7 +659,7 @@ function findCompletingMove(position, mark) {
   return -1;
 }
 
-/* How many different cells would win the game for `mark` right now. */
+// How many different cells would win the game for `mark` right now. 
 function countThreats(position, mark) {
   const spots = new Set();
 
@@ -698,7 +672,7 @@ function countThreats(position, mark) {
   return spots.size;
 }
 
-/* Heuristic value of playing `index`: open lines count more as they fill up. */
+// Heuristic value of playing `index`: open lines count more as they fill up. 
 function scoreCell(position, index, me, opponent) {
   let score = 0;
 
@@ -752,11 +726,11 @@ function pickHardMove(position) {
   emptyIndexes(position).forEach(i => {
     let score = scoreCell(position, i, "O", "X");
 
-    /* Create two winning threats at once. */
+    // Create two winning threats at once. 
     position[i] = "O";
     if (countThreats(position, "O") >= 2) score += 1000;
 
-    /* Take the cell where X would create two threats at once. */
+    // Take the cell where X would create two threats at once. 
     position[i] = "X";
     if (countThreats(position, "X") >= 2) score += 500;
 
@@ -780,9 +754,9 @@ function pickAiMove(position) {
   return pickMediumMove(position);
 }
 
-/* =========================================================
-   FINISH GAME AND SAVE RESULT
-   ========================================================= */
+
+ //  FINISH GAME AND SAVE RESULT
+
 
 function finishIfOver() {
   const result = checkWinner(board);
@@ -837,9 +811,7 @@ function finishIfOver() {
   return true;
 }
 
-/* =========================================================
-   SUPABASE REQUEST HELPERS
-   ========================================================= */
+// SUPABASE REQUEST HELPERS
 
 async function fetchWithTimeout(url, options = {}, ms = 30000) {
   const controller = new AbortController();
@@ -936,9 +908,7 @@ function formatPhilippineDate(value) {
   }).format(date);
 }
 
-/* =========================================================
-   GAME HISTORY
-   ========================================================= */
+   // GAME HISTORY
 
 const HISTORY_KEY = "tttHistory";
 const HISTORY_LIMIT = 100;
@@ -1000,7 +970,7 @@ function normalizeResult(value) {
   return known[normalized] || null;
 }
 
-/* Label shown to the player in Game history. */
+// Label shown to the player in Game history. 
 const RESULT_DISPLAY = {
   "AI Win": "AI Won",
   "Player X Win": "Player X Won",
@@ -1037,12 +1007,7 @@ function saveGameResult(result) {
   });
 }
 
-/*
-  - Send legacy_id because the database requires it.
-  - Do not send id; PostgreSQL should generate the numeric ID.
-  - Do not send device_id.
-  - Preserve pending entries if upload fails.
-*/
+// Send legacy_id 
 
 function syncHistory({ quiet = false } = {}) {
   if (syncPromise) return syncPromise;
@@ -1225,9 +1190,9 @@ async function loadGameHistory() {
   renderHistory();
 }
 
-/* =========================================================
-   DRAWERS
-   ========================================================= */
+
+ //  DRAWERS
+
 
 const drawers = [
   settingsDrawer,
@@ -1320,7 +1285,7 @@ on("#startBtn", "click", () => {
     playSound(500, 0.12);
   }
 
-  /* Release focus so the button never stays in a pressed-looking state. */
+  // Release focus so the button never stays in a pressed-looking state. 
   $("#startBtn")?.blur();
 });
 
@@ -1332,10 +1297,7 @@ on("#restartBtn", "click", () => {
   $("#startBtn")?.blur();
 });
 
-/* Back button (gameplay screen only): ends the current round and returns
-   to the setup screen. enterSetupState() clears the AI and overlay timers,
-   removes the victory overlay and resets the round state, so the old
-   session cannot interfere with the next game. */
+// Back button 
 on("#backBtn", "click", () => {
   enterSetupState();
   playSound(380, 0.1);
@@ -1343,14 +1305,13 @@ on("#backBtn", "click", () => {
   $("#backBtn")?.blur();
 });
 
-/* One listener for all cells, including cells created later. */
+// One listener for all cells, including cells created later. 
 boardEl?.addEventListener("click", handleCellClick);
 
 on("#refreshHistoryBtn", "click", loadGameHistory);
 
-/* =========================================================
-   SOUND SETTINGS
-   ========================================================= */
+
+   // SOUND SETTINGS
 
 function updateSoundUI() {
   if ($("#soundIcon")) {
@@ -1377,9 +1338,9 @@ on("#soundBtn", "click", () => {
   }
 });
 
-/* =========================================================
-   THEMES AND CUSTOM COLORS
-   ========================================================= */
+
+ //  THEMES AND CUSTOM COLORS
+
 
 function luma(hex) {
   const n = parseInt(hex.replace("#", ""), 16);
@@ -1503,9 +1464,8 @@ on("#resetThemeBtn", "click", () => {
   setTheme("chocolate");
 });
 
-/* =========================================================
-   COMMENTS AND SUGGESTIONS
-   ========================================================= */
+
+  // COMMENTS AND SUGGESTIONS
 
 const FEEDBACK_COOLDOWN_MS = 30000;
 const FEEDBACK_QUEUE_KEY = "tttFeedbackQueue";
@@ -1792,9 +1752,8 @@ feedbackForm?.addEventListener("submit", async event => {
   }
 });
 
-/* =========================================================
-   RESTORE PREFERENCES AND START
-   ========================================================= */
+
+ //  RESTORE PREFERENCES AND START
 
 function restorePreferences() {
   const savedTheme =
@@ -1838,7 +1797,7 @@ restorePreferences();
 renderScores();
 renderHistory();
 
-/* The board starts hidden: no difficulty chosen, no game started. */
+// The board starts hidden: no difficulty chosen, no game started. 
 updateLevelButtons();
 enterSetupState();
 
@@ -1851,7 +1810,7 @@ syncHistory({ quiet: true })
     );
   });
   
-/* START GAME AND RESET — REPLAY CLICK EFFECT ON EVERY CLICK */
+// START GAME AND RESET — REPLAY CLICK EFFECT ON EVERY CLICK 
 
 document.addEventListener("click", function (event) {
   const button = event.target.closest("#startBtn, #restartBtn");
@@ -1860,7 +1819,7 @@ document.addEventListener("click", function (event) {
 
   button.classList.remove("button-click-effect");
 
-  // I-restart ang animation sa bawat click.
+  //  animation at every click.
   void button.offsetWidth;
 
   button.classList.add("button-click-effect");
